@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // The Android app still needs to create/read transactions directly.
+    // The verify/balance API runs with the Admin SDK, which always
+    // bypasses these rules, so locking writes here does not break it.
+    match /transactions/{id} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if false; // only the API (Admin SDK) may mark items "used"
+    }
+    match /balances/{id} {
+      allow read, write: if true; // TODO: restrict with Firebase Auth before production
+    }
+    match /config/{id} {
+      allow read, write: if true; // stores the API key generated from the app's Setup Guide screen; TODO: restrict with Firebase Auth before production
+    }
+    match /withdrawals/{id} {
+      allow read, create: if true;
+      allow update, delete: if false;
+    }
+    match /topups/{id} {
+      allow read, create: if true;
+      allow update, delete: if false;
+    }
+  }
+}
